@@ -3,16 +3,16 @@ from app.db.session import get_db
 from app.models.user import User
 from app.schema.auth import (
     UserRegister,
-    UserResponse,
+    AuthResponse,
     UserLogin,
+    UserResponse,
     Token,
 )
-from app.core.auth.jwt import create_access_token, decode_access_token
+from app.core.auth.jwt import create_access_token
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+from app.core.auth.dependencies import get_current_user
 
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post(
     "/signup",
-    response_model=UserResponse,
+    response_model=AuthResponse,
     status_code=status.HTTP_201_CREATED,
 )
 async def signup(
@@ -43,11 +43,19 @@ async def signup(
         hashed_password=hash_password(user.password),
     )
 
+    
+
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
 
-    return new_user
+    token = create_access_token(str(new_user.id))
+
+    return {
+        "user": new_user,
+        "access_token": token,
+        "token_type": "bearer",
+    }
 
 
 
@@ -77,3 +85,8 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
     return Token(
         access_token=token
     )
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_me(current_user: User = Depends(get_current_user)):
+    return current_user

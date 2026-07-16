@@ -1,8 +1,8 @@
 """Creating and handling jwt token"""
 
 from datetime import datetime, timedelta, timezone
-from jose import JWTError, jwt
-
+from jose import  jwt
+from typing import Any
 from app.config import settings
 
 def create_access_token(user_id: str)-> str:
@@ -21,13 +21,12 @@ def create_access_token(user_id: str)-> str:
         algorithm=settings.ALGORITHM
     )
 
-def decode_access_token(token: str):
-    try:
-        payload = jwt.decode(
-            token,
-            settings.JWT_SECRET,
-            algorithms=settings.ALGORITHM,
-        )
-        return payload
-    except JWTError:
-        return None
+def decode_access_token(token: str)->dict[str, Any]:
+    
+    payload = jwt.decode(
+        token,
+        settings.JWT_SECRET,
+        algorithms=[settings.ALGORITHM],
+    )
+    return payload
+    
