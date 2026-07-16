@@ -15,6 +15,13 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "gemini-3.5-flash"
     FALLBACK_LLM_MODEL: str = "gemini-3.1-flash-lite"
 
+    ALGORITHM = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES = 60
+
+    JWT_SECRET: str
+
+    
+
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore",
