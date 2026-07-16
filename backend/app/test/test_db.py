@@ -1,11 +1,13 @@
-from sqlalchemy.ext.asyncio import create_async_engine
 import asyncio
+from sqlalchemy import text
 
-DATABASE_URL = "postgresql+asyncpg://postgres.bizjhnrlmecvcsvqufnk:A%40n2004kit2004@aws-1-ap-south-1.pooler.supabase.com:5432/postgres"
+from app.db.session import AsyncSessionLocal
+
 
 async def test():
-    engine = create_async_engine(DATABASE_URL)
-    async with engine.connect() as conn:
-        print("✅ Connected successfully")
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(text("SELECT 1"))
+        print(result.scalar())
+
 
 asyncio.run(test())
