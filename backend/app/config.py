@@ -2,6 +2,9 @@
 Centrailse variable and models can be imported any where
 """
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Settings(BaseSettings):
     DATABASE_URL: str
@@ -9,8 +12,8 @@ class Settings(BaseSettings):
 
     GOOGLE_API_KEY: str
 
-    LLM_MODEL: str = "gemini-2.5-flash"
-    FALLBACK_LLM_MODEL: str = "gemini-2.5-flash-lite"
+    LLM_MODEL: str = "gemini-3.5-flash"
+    FALLBACK_LLM_MODEL: str = "gemini-3.1-flash-lite"
 
     model_config = SettingsConfigDict(
         env_file=".env",
