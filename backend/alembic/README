@@ -1,0 +1,7 @@
+Generic single-database configuration.
+
+## use this fore creating tables
+# uv run alembic revision --autogenerate -m "create accounts table"
+
+## then app this
+# uv run alembic revision --autogenerate -m "create accounts table"
