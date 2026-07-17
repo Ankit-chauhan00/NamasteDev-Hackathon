@@ -17,10 +17,3 @@ extraction_model = ChatGoogleGenerativeAI(
 reasoning_model = ChatGoogleGenerativeAI(
     model=google_fallback_llm,
 )
-
-response = extraction_model.invoke("Hello you are extraction model")
-
-response2 = reasoning_model.invoke("Hello you are reasoning model")
-
-print(f"Extraction Model : {response.content}")
-print(f"\nReasoning Model : {response2.content}")

@@ -17,14 +17,14 @@ if TYPE_CHECKING:
 
 
 class AccountType(str, Enum):
-     SAVINGS = "Savings"
-     CURRENT = "Current"
+     SAVINGS = "SAVINGS"
+     CURRENT = "CURRENT"
 
 
 class Account(BaseModel):
     __tablename__ = "accounts"
 
-    holder_name: Mapped[str] = mapped_column(
+    name: Mapped[str] = mapped_column(
         String(100),
         nullable=False
     )
@@ -53,4 +53,4 @@ class Account(BaseModel):
     transactions: Mapped[list["Transaction"]] = relationship(
     back_populates="account",
     cascade="all, delete-orphan",
-)
+    )
