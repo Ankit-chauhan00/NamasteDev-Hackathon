@@ -5,6 +5,8 @@ from app.db.session import AsyncSessionLocal
 from app.models.account import Account, AccountType
 from langchain_core.tools import tool
 from sqlalchemy import select
+from typing import Annotated
+from langgraph.prebuilt import InjectedState
 
 # ---------------------------------------------------------------------------
 # Tool 1: create_account
@@ -13,7 +15,8 @@ from sqlalchemy import select
 
 @tool("create_account")
 async def create_account(
-    user_id: UUID, name: str, balance: float, account_type: str = "CURRENT"
+    user_id: Annotated[str, InjectedState("user_id")],name: str, balance: float, account_type: str = "CURRENT",
+     
 ) -> str:
     """
     Create a new account for the authenticated user.
@@ -73,8 +76,17 @@ async def create_account(
 
 
 @tool("list_accounts")
-async def list_user_account(user_id: UUID) -> str:
-    """List the all account user have"""
+async def list_user_account(user_id: Annotated[str, InjectedState("user_id")]) -> str:
+    """
+List all accounts belonging to the authenticated user.
+
+Use this tool only when the user asks to:
+- view their accounts
+- know available accounts
+- choose between accounts
+
+Do not call this tool before every transaction.
+"""
 
     async with AsyncSessionLocal() as db:
         try:
@@ -112,7 +124,7 @@ async def list_user_account(user_id: UUID) -> str:
 
 @tool("get_account_balance")
 async def get_account_balance(
-    user_id: UUID, account_id: UUID | None = None, account_name: str | None = None
+    user_id: Annotated[str, InjectedState("user_id")], account_id: UUID | None = None, account_name: str | None = None
 ) -> str:
     """Get the balance of a specific account belonging to the authenticated user."""
 
@@ -157,7 +169,7 @@ async def get_account_balance(
 
 @tool("update_account")
 async def update_account(
-    user_id: UUID,
+    user_id: Annotated[str, InjectedState("user_id")],
     account_id: UUID,
     name: str | None = None,
     balance: float | None = None,
@@ -221,7 +233,7 @@ async def update_account(
 
 @tool("delete_account")
 async def delete_account(
-    user_id: UUID,
+    user_id: Annotated[str, InjectedState("user_id")],
     account_id: UUID | None = None,
     account_name: str | None = None,
 ) -> str:

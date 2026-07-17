@@ -7,6 +7,8 @@ from app.models.account import Account
 from app.models.transaction import Transaction, TransactionType
 from langchain_core.tools import tool
 from sqlalchemy import select,or_, String
+from typing import Annotated
+from langgraph.prebuilt import InjectedState
 
 
 # ---------------------------------------------------------------------------
@@ -14,8 +16,8 @@ from sqlalchemy import select,or_, String
 # ---------------------------------------------------------------------------
 @tool("create_transaction")
 async def create_transaction(
-    account_id: UUID,
-    user_id: UUID,
+    user_id: Annotated[str, InjectedState("user_id")],
+    account_name: str,
     amount: Decimal,
     transaction_type: str,
     description: str | None = None,
@@ -59,8 +61,8 @@ async def create_transaction(
             # -----------------------------
             result = await db.execute(
                 select(Account).where(
-                    Account.id == account_id,
                     Account.user_id == user_id,
+                    Account.name.ilike(f"%{account_name}%"),
                 )
             )
 
@@ -68,6 +70,8 @@ async def create_transaction(
 
             if account is None:
                 return "Account not found or does not belong to the user."
+
+            account_id = account.id
 
             # -----------------------------
             # Update Account Balance
@@ -118,7 +122,7 @@ async def create_transaction(
 # ---------------------------------------------------------------------------
 @tool("list_transactions")
 async def list_transactions(
-    user_id: UUID,
+    user_id: Annotated[str, InjectedState("user_id")],
     account_id: UUID | None = None,
     transaction_type: str | None = None,
 ) -> str:
@@ -187,7 +191,7 @@ Account ID  : {tx.account_id}
 @tool("update_transaction")
 async def update_transaction(
     transaction_id: UUID,
-    user_id: UUID,
+    user_id: Annotated[str, InjectedState("user_id")],
     amount: Decimal | None = None,
     transaction_type: str | None = None,
     description: str | None = None,
@@ -294,7 +298,7 @@ async def update_transaction(
 @tool("delete_transaction")
 async def delete_transaction(
     transaction_id: UUID,
-    user_id: UUID,
+    user_id: Annotated[str, InjectedState("user_id")],
 ) -> str:
     """
     Delete a transaction and restore the account balance.
@@ -346,7 +350,7 @@ async def delete_transaction(
 
 @tool("search_transactions")
 async def search_transactions(
-    user_id: UUID,
+    user_id: Annotated[str, InjectedState("user_id")],
     keyword: str,
 ) -> str:
     """
