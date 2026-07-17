@@ -16,9 +16,9 @@ if TYPE_CHECKING:
     from app.models.account import Account
 
 class TransactionType(str,Enum):
-    INCOME = "Income"
-    EXPENSE = "Expense"
-    TRANSFER = "Transfer"
+    INCOME = "INCOME"
+    EXPENSE = "EXPENSE"
+    TRANSFER = "TRANSFER"
 
 
 class Transaction(BaseModel):
@@ -55,10 +55,6 @@ class Transaction(BaseModel):
         nullable=False,
     )
 
-    account: Mapped["Account"]= mapped_column(
-        ForeignKey("accounts.id", ondelete="CASCADE"),
-        nullable=False,
-    )
 
     user_id: Mapped[UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),
@@ -68,7 +64,7 @@ class Transaction(BaseModel):
     account: Mapped["Account"] = relationship(
         back_populates="transactions",
     )
-    
+
     user: Mapped["User"] = relationship(
         back_populates="transactions",
     )
