@@ -1,12 +1,12 @@
 from decimal import Decimal
+from typing import Annotated, Any
 from uuid import UUID
 
 from app.db.session import AsyncSessionLocal
 from app.models.account import Account, AccountType
 from langchain_core.tools import tool
-from sqlalchemy import select
-from typing import Annotated
 from langgraph.prebuilt import InjectedState
+from sqlalchemy import select
 
 # ---------------------------------------------------------------------------
 # Tool 1: create_account
@@ -15,20 +15,23 @@ from langgraph.prebuilt import InjectedState
 
 @tool("create_account")
 async def create_account(
-    user_id: Annotated[str, InjectedState("user_id")],name: str, balance: float, account_type: str = "CURRENT",
-     
-) -> str:
+    user_id: Annotated[str, InjectedState("user_id")],
+    name: str,
+    balance: float,
+    account_type: str = "CURRENT",
+) -> dict[str, Any]:
     """
     Create a new account for the authenticated user.
     """
 
-    
-
     # Validate account type
     try:
         account_type_enum = AccountType(account_type.upper())
-    except ValueError:
-        return f"Invalid account type. Allowed values: {[e.value for e in AccountType]}"
+    except ValueError as e:
+        return {
+            "success": False,
+            "message": str(e),
+        }
 
     async with AsyncSessionLocal() as db:
         try:
@@ -42,9 +45,9 @@ async def create_account(
             existing_account = result.scalar_one_or_none()
 
             if existing_account:
-                return f"An account named '{name}' already exists."
+                return {"success": False, "message": "Account alredy exists"}
             if balance is not None and balance < 0:
-                return "Balance cannot be negative."
+                return {"success": False, "message": "Balance cannot be negative."}
 
             account = Account(
                 name=name,
@@ -58,16 +61,23 @@ async def create_account(
             await db.commit()
             await db.refresh(account)
 
-            return (
-                f"Account created successfully!\n\n"
-                f"Name: {account.name}\n"
-                f"Balance: ₹{account.balance}\n"
-                f"Type: {account.account_type.value}"
-            )
+            return {
+                "success": True,
+                "message": "Account created successfully.",
+                "account": {
+                    "id": str(account.id),
+                    "name": account.name,
+                    "balance": float(account.balance),
+                    "account_type": account.account_type.value,
+                },
+            }
 
         except Exception as e:
             await db.rollback()
-            return f"Failed to create account: {str(e)}"
+            return {
+                "success": False,
+                "message": str(e),
+            }
 
 
 # ---------------------------------------------------------------------------
@@ -76,17 +86,19 @@ async def create_account(
 
 
 @tool("list_accounts")
-async def list_user_account(user_id: Annotated[str, InjectedState("user_id")]) -> str:
+async def list_user_account(
+    user_id: Annotated[str, InjectedState("user_id")],
+) -> dict[str, Any]:
     """
-List all accounts belonging to the authenticated user.
+    List all accounts belonging to the authenticated user.
 
-Use this tool only when the user asks to:
-- view their accounts
-- know available accounts
-- choose between accounts
+    Use this tool only when the user asks to:
+    - view their accounts
+    - know available accounts
+    - choose between accounts
 
-Do not call this tool before every transaction.
-"""
+    Do not call this tool before every transaction.
+    """
 
     async with AsyncSessionLocal() as db:
         try:
@@ -100,21 +112,29 @@ Do not call this tool before every transaction.
             accounts = result.scalars().all()
 
             if not accounts:
-                return "No Account found for this user."
+                return {
+                    "success": False,
+                    "message": "Account not found",
+                }
 
-            response = ["Your accounts:\n"]
-
-            for account in accounts:
-                response.append(
-                    f"- {account.name} "
-                    f"({account.account_type.value}) "
-                    f": ₹{account.balance}"
-                )
-
-            return "\n".join(response)
+            return {
+                "success": True,
+                "accounts": [
+                    {
+                        "id": str(account.id),
+                        "name": account.name,
+                        "balance": float(account.balance),
+                        "account_type": account.account_type.value,
+                    }
+                    for account in accounts
+                ],
+            }
 
         except Exception as e:
-            return f"Failed to fetch accounts: {str(e)}"
+            return {
+                "success": False,
+                "message": str(e),
+            }
 
 
 # ---------------------------------------------------------------------------
@@ -124,8 +144,10 @@ Do not call this tool before every transaction.
 
 @tool("get_account_balance")
 async def get_account_balance(
-    user_id: Annotated[str, InjectedState("user_id")], account_id: UUID | None = None, account_name: str | None = None
-) -> str:
+    user_id: Annotated[str, InjectedState("user_id")],
+    account_id: UUID | None = None,
+    account_name: str | None = None,
+) -> dict[str, Any]:
     """Get the balance of a specific account belonging to the authenticated user."""
 
     async with AsyncSessionLocal() as db:
@@ -145,21 +167,31 @@ async def get_account_balance(
                     )
                 )
             else:
-                return "please provide either account_id or account_name."
+                return {
+                    "status": False,
+                    "message": "please provide either account_id or account_name.",
+                }
 
             account = result.scalar_one_or_none()
 
             if account is None:
-                return "Account not found."
+                return {"status": False, "message": "Account not found"}
 
-            return (
-                f"Account: {account.name}\n"
-                f"Type: {account.account_type.value}\n"
-                f"Current Balance: ₹{account.balance}"
-            )
+            return {
+                "success": True,
+                "account": {
+                    "id": str(account.id),
+                    "name": account.name,
+                    "balance": float(account.balance),
+                    "account_type": account.account_type.value,
+                },
+            }
 
         except Exception as e:
-            return f"Failed to fetch account balance: {str(e)}"
+            return {
+                "success": False,
+                "message": str(e),
+            }
 
 
 # ---------------------------------------------------------------------------
@@ -174,7 +206,7 @@ async def update_account(
     name: str | None = None,
     balance: float | None = None,
     account_type: str | None = None,
-) -> str:
+) -> dict[str, Any]:
     """
     Update an existing account's name, balance, or account type.
     """
@@ -191,7 +223,7 @@ async def update_account(
             account = result.scalar_one_or_none()
 
             if account is None:
-                return "Account not found."
+                return {"status": False, "message": "Account Not Found"}
 
             # Update name
             if name is not None:
@@ -205,25 +237,32 @@ async def update_account(
             if account_type is not None:
                 try:
                     account.account_type = AccountType(account_type.upper())
-                except ValueError:
-                    return (
-                        "Invalid account type. "
-                        f"Allowed values: {[e.value for e in AccountType]}"
-                    )
+                except ValueError as e:
+                    return {
+                        "success": False,
+                        "message": str(e),
+                    }
 
             await db.commit()
             await db.refresh(account)
 
-            return (
-                "Account updated successfully!\n\n"
-                f"Name: {account.name}\n"
-                f"Balance: ₹{account.balance}\n"
-                f"Type: {account.account_type.value}"
-            )
+            return {
+                "success": True,
+                "message": "Account updated successfully.",
+                "account": {
+                    "id": str(account.id),
+                    "name": account.name,
+                    "balance": float(account.balance),
+                    "account_type": account.account_type.value,
+                },
+            }
 
         except Exception as e:
             await db.rollback()
-            return f"Failed to update account: {str(e)}"
+            return {
+                "success": False,
+                "message": str(e),
+            }
 
 
 # ---------------------------------------------------------------------------
@@ -236,14 +275,17 @@ async def delete_account(
     user_id: Annotated[str, InjectedState("user_id")],
     account_id: UUID | None = None,
     account_name: str | None = None,
-) -> str:
+) -> dict[str, Any]:
     """
     Delete one of the authenticated user's accounts using either the
     account ID or the account name.
     """
 
     if account_id is None and account_name is None:
-        return "Please provide either an account ID or an account name."
+        return {
+            "status": False,
+            "message": "Please provide either an account ID or an account name."
+        }
 
     async with AsyncSessionLocal() as db:
         try:
@@ -265,13 +307,26 @@ async def delete_account(
             account = result.scalar_one_or_none()
 
             if account is None:
-                return "Account not found."
+                return {
+                    "status": False,
+                    "message": "Account not found"
+                }
 
             await db.delete(account)
             await db.commit()
 
-            return f"Account '{account.name}' has been deleted successfully."
+            return {
+                "success": True,
+                "message": "Account deleted successfully.",
+                "deleted_account": {
+                "id": str(account.id),
+                "name": account.name,
+                },
+            }
 
         except Exception as e:
             await db.rollback()
-            return f"Failed to delete account: {str(e)}"
+            return {
+                "success": False,
+                "message": str(e),
+            }
