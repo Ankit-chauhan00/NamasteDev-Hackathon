@@ -2,6 +2,7 @@
 
 import enum
 from datetime import  datetime
+from decimal import Decimal
 
 from sqlalchemy import String, DateTime, Text, Numeric, Enum as SQLEnum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -34,11 +35,11 @@ class Goal(BaseModel):
 
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    target_amount: Mapped[float] = mapped_column(
+    target_amount: Mapped[Decimal] = mapped_column(
         Numeric(12, 2),
         nullable=False,
     )
-    current_amount: Mapped[float] = mapped_column(
+    current_amount: Mapped[Decimal] = mapped_column(
         Numeric(12, 2),
         default=0,
         nullable=False,

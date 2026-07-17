@@ -7,8 +7,5 @@ registered with Base.metadata.
 from app.models.user import User
 from app.models.account import Account
 from app.models.transaction import Transaction
+from app.models.goals import Goal
 
-# Future models
-# from app.models.account import Account
-# from app.models.transaction import Transaction
-# from app.models.goal import Goal
