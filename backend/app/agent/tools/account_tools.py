@@ -18,7 +18,7 @@ async def create_account(
     user_id: Annotated[str, InjectedState("user_id")],
     name: str,
     balance: float,
-    account_type: str = "CURRENT",
+    account_type: str ,
 ) -> dict[str, Any]:
     """
     Create a new account for the authenticated user.

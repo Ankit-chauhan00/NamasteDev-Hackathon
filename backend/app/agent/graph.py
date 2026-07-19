@@ -111,6 +111,12 @@ async def run_agent(
     final_message = result["messages"][-1]
     reply = final_message.content
 
+    try: 
+        reply = json.loads(reply)
+    except Exception:
+        pass
+
+
     if isinstance(reply, list):
         parts = []
 
