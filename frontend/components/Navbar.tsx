@@ -11,16 +11,16 @@ const links = [
     href: "/",
   },
   {
-    name: "Features",
-    href: "/features",
+    name: "AI Agent",
+    href: "/chat",
   },
   {
-    name: "Pricing",
-    href: "/pricing",
+    name: "Your Transaction",
+    href: "/transactions",
   },
   {
-    name: "About",
-    href: "/about",
+    name: "Your Accounts",
+    href: "/accounts",
   },
 ];
 

@@ -31,7 +31,7 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${font_1.variable} ${font_2.variable} ${font_3.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-gradient-main-2">{children}</body>
     </html>
   );
 }
