@@ -30,8 +30,8 @@ npm run dev
 
 ## Default URLs
 
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8000
+- Frontend: https://namaste-dev-hackathon.vercel.app/
+- Backend: https://namastedev-hackathon.onrender.com
 
 ## Notes
 
