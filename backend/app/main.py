@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes.auth import router as auth_router
+from app.api.routes.user_services import router as user_router
 from app.schema.input_schema import ChatRequest, ChatResponse
 from app.agent.graph import run_agent
 from app.core.auth.dependencies import get_current_user
@@ -24,6 +25,7 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(user_router)
 
 @app.get("/")
 async def root():

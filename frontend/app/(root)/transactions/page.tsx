@@ -1,9 +1,16 @@
+"use client";
+import { useUser } from '@/context/userProvider'
+import { redirect } from 'next/navigation';
 import React from 'react'
 
-const page = () => {
+const TransactionDetails = () => {
+  const user = useUser()
+  if(!user){
+    redirect("/sign-in");
+  }
   return (
-    <div>page</div>
+    <div>TransactionDetails</div>
   )
 }
 
-export default page
+export default TransactionDetails
