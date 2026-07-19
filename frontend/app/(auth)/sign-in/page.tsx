@@ -24,7 +24,7 @@ const SignInForm = () => {
       });
 
       if (res.ok) {
-        router.push("/dashboard");
+        router.push("/");
       } else {
         const data = await res.json();
         setError(data.detail ?? "Invalid email or password");

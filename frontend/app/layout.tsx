@@ -1,6 +1,5 @@
 import localFont from "next/font/local";
 import "./globals.css";
-import { cookies } from "next/headers";
 
 const font_1 = localFont({
   src: "../public/fonts/font1.ttf",
@@ -25,8 +24,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const token = (await cookies()).get("token")?.value;
-  // const user = token ? await getCurrentUser(token) : null; // calls FastAPI /auth/me
 
   return (
     <html

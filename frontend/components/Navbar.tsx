@@ -1,7 +1,8 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+
 import React from "react";
 
 const links = [
@@ -23,8 +24,25 @@ const links = [
   },
 ];
 
-const Navbar = () => {
+interface NavbarProps {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
+}
+
+const Navbar = ({ user }: NavbarProps) => {
   const path = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+    });
+
+    router.push("/");
+  };
 
   return (
     <nav className="fixed top-0 left-0 z-50 w-full">
@@ -65,21 +83,31 @@ const Navbar = () => {
         </div>
 
         {/* Buttons */}
-        <div className="flex items-center gap-4">
-          <Link
-            href="/login"
-            className="rounded-xl border border-clinical-600 px-5 py-2 text-sm font-medium transition hover:bg-neutral-100"
-          >
-            Sign In
-          </Link>
+        {user ? (
+          <div className="flex items-center gap-4">
+            <span className="text-xl font-extralight font-3">Hi, {user.name}</span>
 
-          <Link
-            href="/signup"
-            className="rounded-xl bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
-          >
-            Get Started
-          </Link>
-        </div>
+            <button onClick={handleLogout} className="rounded-md bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
+              Logout
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-4">
+            <Link
+              href="/sign-in"
+              className="rounded-xl border border-clinical-600 px-5 py-2 text-sm font-medium transition hover:bg-neutral-100"
+            >
+              Sign In
+            </Link>
+
+            <Link
+              href="/sign-up"
+              className="rounded-xl bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+            >
+              Get Started
+            </Link>
+          </div>
+        )}
       </div>
     </nav>
   );

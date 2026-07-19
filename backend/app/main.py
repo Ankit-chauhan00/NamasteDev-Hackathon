@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes.auth import router as auth_router
 from app.schema.input_schema import ChatRequest, ChatResponse
 from app.agent.graph import run_agent
@@ -12,6 +13,14 @@ app = FastAPI(
     title="AI-personal-Finance-Manager",
     description="Ai powere finance management system",
     version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000",""],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(auth_router)

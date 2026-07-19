@@ -1,13 +1,16 @@
 import Navbar from "@/components/Navbar";
+import { UserProvider } from "@/context/userProvider";
+import { getCurrentUser } from "@/lib/auth";
 import React, { ReactNode } from "react";
 
-const RootLayout = ({ children }: { children: ReactNode }) => {
+const RootLayout = async ({ children }: { children: ReactNode }) => {
+  const user = await getCurrentUser();
   return (
     <main className="min-h-screen w-full flex flex-col">
-        <Navbar/>
-      <section className="flex-1">
-        {children}
-      </section>
+      <UserProvider user={user}>
+        <Navbar user={user} />
+        <section className="flex-1">{children}</section>
+      </UserProvider>
     </main>
   );
 };
