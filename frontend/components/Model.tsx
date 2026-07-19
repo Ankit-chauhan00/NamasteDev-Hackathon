@@ -27,7 +27,7 @@ function Bot() {
     <primitive
       object={scene}
       scale={24.6}
-      position={[0, -0.02, 0]}
+      position={[0, -0.04, 0]}
       rotation={[0, -0.4, 0]}
     />
     </group>
@@ -37,8 +37,9 @@ function Bot() {
 export default function BotModel() {
   return (
     <Canvas camera={{ position: [0, 0, 1], fov: 30 }}>
-      <ambientLight intensity={0.6} />
-      <Environment preset="forest" />
+      {/* <directionalLight intensity={1} /> */}
+      <pointLight position={[0.2,0.2,0]}/>
+      <Environment preset="forest" resolution={2048}/>
       <PresentationControls
         global
         rotation={[0, 0, 0]}
